@@ -25,8 +25,6 @@ def home(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/users/', include('users.urls')),
-    path('', home),
-    path('api/users/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('users/', include('users.urls')),  # Include the users app's URLs
+    path('chat/', include('chat.urls')),   # Include the chat app's URLs
 ]
