@@ -7,7 +7,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f'chat_{self.room_name}'
 
         # Debug log
-        print(f"[DEBUG] Attempting to connect WebSocket to room: {self.room_name}")
+        print(f"[DEBUG] WebSocket connection attempt for room: {self.room_name}")
 
         try:
             # Join room group

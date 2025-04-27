@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #(.venv\Scripts\activate) # python manage.py runserver
-#username: john, email: johndoe@gmail.com, password: 87654321a
+#username: Doug, email: Doug@gmail.com, password: 87654321a
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
