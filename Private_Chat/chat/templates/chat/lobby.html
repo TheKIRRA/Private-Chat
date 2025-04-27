@@ -25,6 +25,13 @@
             color: red;
             margin-top: 10px;
         }
+        .chatroom-urls {
+            margin-top: 30px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
@@ -35,94 +42,23 @@
         <button type="submit">Create Chatroom</button>
     </form>
     <p class="error" id="errorMessage"></p>
-    <div class="chatroom-list" id="chatroomList">
+    <div class="chatroom-list">
         <h2>Available Chatrooms</h2>
-        <!-- Chatrooms will be dynamically added here -->
+        {% for chatroom in chatrooms %}
+            <div class="chatroom">
+                <a href="{% url 'chat:room' room_name=chatroom.name %}">{{ chatroom.name }}</a>
+            </div>
+        {% empty %}
+            <p>No chatrooms available. Create one above!</p>
+        {% endfor %}
     </div>
-
-    <script>
-        const form = document.getElementById('createChatroomForm');
-        const chatroomList = document.getElementById('chatroomList');
-        const errorMessage = document.getElementById('errorMessage');
-        const maxChatrooms = 3;
-        let chatrooms = [];
-
-        const socket = io('http://localhost:3000');
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const chatroomName = document.getElementById('chatroomName').value.trim();
-
-            if (chatroomName === '') {
-                errorMessage.textContent = 'Chatroom name cannot be empty.';
-                return;
-            }
-
-            if (chatrooms.length >= maxChatrooms) {
-                errorMessage.textContent = `You can only create up to ${maxChatrooms} chatrooms.`;
-                return;
-            }
-
-            if (chatrooms.includes(chatroomName)) {
-                errorMessage.textContent = 'Chatroom name must be unique.';
-                return;
-            }
-
-            errorMessage.textContent = '';
-            await createChatroom(chatroomName);
-            form.reset();
-        });
-
-        async function fetchChatrooms() {
-            const response = await fetch('http://localhost:3000/chatrooms');
-            chatrooms = await response.json();
-            displayChatrooms();
-        }
-
-        async function createChatroom(chatroomName) {
-            const response = await fetch('http://localhost:3000/chatrooms', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: chatroomName }),
-            });
-            if (response.ok) {
-                fetchChatrooms();
-            } else {
-                const error = await response.json();
-                errorMessage.textContent = error.error;
-            }
-        }
-
-        async function deleteChatroom(index) {
-            const chatroomName = chatrooms[index];
-            await fetch('http://localhost:3000/chatrooms', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: chatroomName }),
-            });
-            fetchChatrooms();
-        }
-
-        function displayChatrooms() {
-            chatroomList.innerHTML = '<h2>Available Chatrooms</h2>';
-            chatrooms.forEach((chatroom, index) => {
-                const chatroomDiv = document.createElement('div');
-                chatroomDiv.className = 'chatroom';
-                chatroomDiv.innerHTML = `
-                    <span>${chatroom}</span>
-                    <button onclick="joinChatroom('${chatroom}')">Join</button>
-                    <button onclick="deleteChatroom(${index})">Delete</button>
-                `;
-                chatroomList.appendChild(chatroomDiv);
-            });
-        }
-
-        function joinChatroom(chatroomName) {
-            socket.emit('joinRoom', chatroomName);
-            window.location.href = `/chatroom.html?name=${encodeURIComponent(chatroomName)}`;
-        }
-
-        fetchChatrooms();
-    </script>
+    <div class="chatroom-urls">
+        <h2>Chatroom URLs</h2>
+        {% for chatroom in chatrooms %}
+            <p>URL: <a href="{% url 'chat:room' room_name=chatroom.name %}">{{ request.build_absolute_uri|slice:":-1" }}{% url 'chat:room' room_name=chatroom.name %}</a></p>
+        {% empty %}
+            <p>No chatroom URLs available.</p>
+        {% endfor %}
+    </div>
 </body>
 </html>

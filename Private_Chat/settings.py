@@ -123,7 +123,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",  # Default Django authentication backend
-    # "two_factor.auth_backends.TwoFactorAuthBackend",  # Comment this line temporarily
 ]
 
 LOGIN_REDIRECT_URL = '/chat/lobby/'  # Redirect to the chat lobby or another page
@@ -133,7 +132,6 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-        'BACKEND': "django.contrib.auth.backends.ModelBackend",
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # Use in-memory layer for development
     },
 }

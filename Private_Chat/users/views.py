@@ -4,7 +4,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from rest_framework import status
 from two_factor.views import LoginView
 from django.views.generic import ListView
@@ -21,14 +21,13 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse  # Add this import
 from .forms import CustomUserCreationForm
 from django.urls import path
 from . import views
+from django.contrib import messages
 
 app_name = 'chat'
-
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -115,20 +114,30 @@ def signup_view(request):
         form = CustomUserCreationForm()
     return render(request, 'registration/signup.html', {'form': form})
 
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('chat:lobby')  # Redirect to the lobby after login
+        else:
+            messages.error(request, 'Invalid username or password')
+    return render(request, 'registration/login.html')
+
 def custom_login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-
-        # Authenticate the user
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            # Redirect to the chat room
-            return redirect('chat:room', room_name='lobby')  # Default room is 'lobby'
-        else:
-            return render(request, 'registration/login.html', {'error': 'Invalid username or password'})
-
-    # Handle GET request to render the login form
-    return render(request, 'registration/login.html')
+        try:
+            user = CustomUser.objects.get(username=username)
+            if check_password(password, user.password):  # Verify the hashed password
+                login(request, user)
+                return redirect('chat:lobby')  # Redirect to the chat lobby after login
+            else:
+                messages.error(request, 'Invalid username or password')
+        except CustomUser.DoesNotExist:
+            messages.error(request, 'Invalid username or password')
+    return render(request, 'users/login.html')
 

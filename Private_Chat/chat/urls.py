@@ -5,5 +5,5 @@ app_name = 'chat'
 
 urlpatterns = [
     path('lobby/', views.lobby, name='lobby'),
-    path('room/<str:room_name>/', views.room, name='room'),  # Example for room view
+    path('room/<path:room_name>/', views.room, name='room'),  # Use <path:room_name> to allow slashes
 ]
