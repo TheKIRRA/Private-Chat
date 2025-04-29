@@ -46,7 +46,9 @@
         <h2>Available Chatrooms</h2>
         {% for chatroom in chatrooms %}
             <div class="chatroom">
-                <a href="{% url 'chat:room' room_name=chatroom.name %}">{{ chatroom.name }}</a>
+                <a href="{% url 'chat:room' room_name=chatroom.name %}?ws_url=ws://{{ request.get_host }}/ws/chat/{{ chatroom.name }}/">
+                    {{ chatroom.name }}
+                </a>
             </div>
         {% empty %}
             <p>No chatrooms available. Create one above!</p>
@@ -55,7 +57,9 @@
     <div class="chatroom-urls">
         <h2>Chatroom URLs</h2>
         {% for chatroom in chatrooms %}
-            <p>URL: <a href="{% url 'chat:room' room_name=chatroom.name %}">{{ request.build_absolute_uri|slice:":-1" }}{% url 'chat:room' room_name=chatroom.name %}</a></p>
+            <p>URL: <a href="{% url 'chat:room' room_name=chatroom.name %}?ws_url=ws://{{ request.get_host }}/ws/chat/{{ chatroom.name }}/">
+                {{ request.build_absolute_uri|slice:":-1" }}{% url 'chat:room' room_name=chatroom.name %}
+            </a></p>
         {% empty %}
             <p>No chatroom URLs available.</p>
         {% endfor %}

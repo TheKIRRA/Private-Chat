@@ -1,22 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Room</title>
     <script>
         var roomName = "{{ room_name }}";
-        var chatSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'); // Ensure this matches the route in routing.py
+        var protocol = window.location.protocol === "https:" ? "wss://" : "ws://";  // Use wss:// for HTTPS
+        var chatSocket = new WebSocket(protocol + window.location.host + '/ws/chat/' + roomName + '/'); // Use /ws/chat/<room_name>/ path
 
         chatSocket.onmessage = function(e) {
             var data = JSON.parse(e.data);
             var message = data['message'];
-            document.querySelector('#chat-log').value += (message + '\n');
+            var timestamp = new Date().toLocaleTimeString();  // Add timestamp
+            document.querySelector('#chat-log').value += (`[${timestamp}] ${message}\n`);
         };
 
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly:', e);
-            alert('WebSocket connection closed. Please refresh the page.');
+            alert('WebSocket connection closed. Attempting to reconnect...');
+            setTimeout(function() {
+                reconnectWebSocket();  // Attempt reconnection without page reload
+            }, 3000);
         };
+
+        function reconnectWebSocket() {
+            chatSocket = new WebSocket(protocol + window.location.host + '/ws/chat/' + roomName + '/'); // Use /ws/chat/<room_name>/ path
+            chatSocket.onmessage = function(e) {
+                var data = JSON.parse(e.data);
+                var message = data['message'];
+                var timestamp = new Date().toLocaleTimeString();
+                document.querySelector('#chat-log').value += (`[${timestamp}] ${message}\n`);
+            };
+            chatSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly:', e);
+                alert('WebSocket connection closed. Attempting to reconnect...');
+                setTimeout(reconnectWebSocket, 3000);
+            };
+        }
 
         document.querySelector('#chat-message-input').focus();
         document.querySelector('#chat-message-input').onkeyup = function(e) {
@@ -28,10 +49,12 @@
         document.querySelector('#chat-message-submit').onclick = function(e) {
             var messageInputDom = document.querySelector('#chat-message-input');
             var message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-            messageInputDom.value = '';
+            if (message.trim() !== "") {  // Prevent sending empty messages
+                chatSocket.send(JSON.stringify({
+                    'message': message
+                }));
+                messageInputDom.value = '';
+            }
         };
     </script>
 </head>

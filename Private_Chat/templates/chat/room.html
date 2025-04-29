@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+    <!-- Include other CSS or JS files if needed -->
+</head>
+<body>
+    <h1>Chat Room: {{ room_name }}</h1>
+    <div id="chat-log"></div>
+    <input id="chat-message-input" type="text" placeholder="Type your message here...">
+    <button id="chat-message-submit">Send</button>
+
+    <!-- Include the chat.js file -->
+    <script src="{% static 'js/chat.js' %}"></script>
+</body>
+</html>

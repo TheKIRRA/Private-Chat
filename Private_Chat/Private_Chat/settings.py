@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_static",  # Static OTP tokens
     "django_otp.plugins.otp_totp",  # Time-based OTP tokens
     "two_factor",  # Two-factor authentication
+    "django_extensions",  # Add this line
 ]
 
 MIDDLEWARE = [

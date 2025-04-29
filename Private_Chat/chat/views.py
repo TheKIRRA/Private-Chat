@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from urllib.parse import quote, unquote
 from .models import Chatroom  # Ensure this matches the model definition
 from .serializers import RegisterSerializer, LoginSerializer, CustomUserSerializer  # Ensure this matches the serializers defined
 
@@ -16,15 +17,17 @@ def room(request, room_name):
         'room_name': chatroom.name
     })
 
-@login_required
+def chat_room(request, room_name):
+    ws_url = request.GET.get('ws_url', f'ws://{request.get_host()}/ws/chat/{room_name}/')  # Default to dynamically constructed WebSocket URL
+    return render(request, 'chat/room.html', {
+        'room_name': room_name,
+        'websocket_url': ws_url
+    })
+
 def lobby(request):
-    if request.method == 'POST':
-        chatroom_name = request.POST.get('chatroomName')
-        if chatroom_name:
-            chatroom, created = Chatroom.objects.get_or_create(name=chatroom_name)
-            return redirect('chat:room', room_name=chatroom.name)  # Redirect to the chatroom
-    chatrooms = Chatroom.objects.all()
-    return render(request, 'chat/lobby.html', {'chatrooms': chatrooms})
+    # Example: Fetch available chatrooms from the database or define them statically
+    chatrooms = [{'name': quote('general/first')}, {'name': quote('general/second')}]  # Ensure names are URL-safe
+    return render(request, 'chat/lobby.html', {'chatrooms': chatrooms})  # Render the lobby page
 
 # Create your views here.
 
@@ -35,4 +38,5 @@ app_name = 'chat'
 
 urlpatterns = [
     path('lobby/', views.lobby, name='lobby'),
+    path('<path:room_name>/', views.chat_room, name='chat_room'),
 ]
